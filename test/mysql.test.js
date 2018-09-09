@@ -1,3 +1,4 @@
+require('dotenv').config()
 var Funcmatic = require('@funcmatic/funcmatic')
 var MySQLPlugin = require('../lib/mysql')
 var mysqlconf = {

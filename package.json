@@ -13,6 +13,7 @@
     "url": "https://github.com/getfuncmatic/mysql2-plugin-funcmatic.git"
   },
   "dependencies": {
+    "dotenv": "^6.0.0",
     "mysql2": "^1.6.1"
   },
   "devDependencies": {
