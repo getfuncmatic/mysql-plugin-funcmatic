@@ -6,7 +6,8 @@ funcmatic.use(MySQLPlugin, {
   host: process.env.MYSQL_HOST,
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE
+  database: process.env.MYSQL_DATABASE,
+  cache: false
 })
 
 // var handler = Funcmatic.wrap(async (event, context, { mysql }) => {
@@ -25,7 +26,20 @@ funcmatic.use(MySQLPlugin, {
 //     insertRes, selectRes
 //   }    
 // })
-
+describe('Initialization', async () => {
+  expect(process.env.MYSQL_HOST).toBeTruthy()
+  var newfunc = funcmatic.clone()
+  newfunc.clear()
+  newfunc.use(MySQLPlugin)
+  var plugin = newfunc.getPlugin('mysql')
+  expect(plugin.host).toBeFalsy() // it should not be initialized yet
+  await newfunc.invoke({}, {}, async(event, context, { }) => {
+    // noop
+  })
+  expect(plugin.host).toEqual(process.env.MYSQL_HOST)
+  expect(plugin.cache).toEqual(process.env.MYSQL_CACHE_CONNECTION == 'true')
+  await newfunc.teardown()
+})
 describe('Request', () => {
   var plugin = null
   beforeEach(async () => {
@@ -39,9 +53,13 @@ describe('Request', () => {
   it ('should create an uncached connection', async () => {
     var event = { }
     var context = { }
+    expect(plugin.cache).toBeFalsy()
+    console.log("PLUGINOUTER", plugin)
     await funcmatic.invoke(event, context, async (event, context, { mysql }) => {
+      console.log("PLUGININNER", plugin)
       expect(mysql).toBeTruthy()
     })
+    console.log("PLUGINOVER", plugin)
     expect(plugin.cachedConn).toBeFalsy()
   })
   it ('should create a cached connection', async () => {
